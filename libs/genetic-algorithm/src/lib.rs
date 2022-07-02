@@ -1,4 +1,4 @@
-#![feature(min_type_alias_impl_trait)]
+#![feature(type_alias_impl_trait)]
 
 pub use self::{
     chromosome::*, crossover::*, individual::*, mutation::*, selection::*, statistics::*,

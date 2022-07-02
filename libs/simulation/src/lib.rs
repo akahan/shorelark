@@ -17,6 +17,15 @@ use rand::{Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::*;
 
+pub struct SimulationStats {
+    pub age: usize,
+    pub generation_length: usize,
+    pub generation: usize,
+    pub min_fitness: Option<f32>,
+    pub avg_fitness: Option<f32>,
+    pub max_fitness: Option<f32>,
+}
+
 pub struct Simulation {
     config: Config,
     world: World,
@@ -141,6 +150,17 @@ impl Simulation {
         Statistics {
             generation: self.generation - 1,
             ga: statistics,
+        }
+    }
+
+    pub fn generate_statistics(&self, stats: &Option<Statistics>) -> SimulationStats {
+        SimulationStats {
+            age: self.age,
+            generation_length: self.config.sim_generation_length,
+            generation: self.generation,
+            min_fitness: stats.as_ref().map(|stats| stats.ga.min_fitness()),
+            avg_fitness: stats.as_ref().map(|stats| stats.ga.avg_fitness()),
+            max_fitness: stats.as_ref().map(|stats| stats.ga.max_fitness()),
         }
     }
 }

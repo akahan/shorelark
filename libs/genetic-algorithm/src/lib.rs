@@ -1,4 +1,3 @@
-#![feature(crate_visibility_modifier)]
 #![feature(min_type_alias_impl_trait)]
 
 pub use self::{

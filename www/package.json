@@ -7,7 +7,11 @@
     "build": "webpack --config webpack.config.js",
     "start": "webpack-dev-server"
   },
+  "license": "(MIT OR Apache-2.0)",
   "dependencies": {
+    "chart.js": "^3.7.0",
+    "chartjs-adapter-luxon": "^1.1.0",
+    "luxon": "^2.3.0",
     "lib-simulation-wasm": "file:../libs/simulation-wasm/pkg"
   },
   "devDependencies": {

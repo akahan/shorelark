@@ -10,6 +10,49 @@ use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
+pub struct Statistics {
+    age: usize,
+    generation_length: usize,
+    generation: usize,
+    min: Option<f32>,
+    avg: Option<f32>,
+    max: Option<f32>,
+}
+#[wasm_bindgen]
+impl Statistics {
+    fn from_simulation_stats(stats: &sim::SimulationStats) -> Self {
+        Self {
+            age: stats.age,
+            generation_length: stats.generation_length,
+            generation: stats.generation,
+            min: stats.min_fitness,
+            avg: stats.avg_fitness,
+            max: stats.max_fitness,
+        }
+    }
+    pub fn age(&self) -> usize {
+        self.age
+    }
+    pub fn generation_length(&self) -> usize {
+        self.generation_length
+    }
+    pub fn generation(&self) -> usize {
+        self.generation
+    }
+
+    pub fn min(&self) -> Option<f32> {
+        self.min
+    }
+
+    pub fn avg(&self) -> Option<f32> {
+        self.avg
+    }
+
+    pub fn max(&self) -> Option<f32> {
+        self.max
+    }
+}
+#[wasm_bindgen]
 pub struct Simulation {
     rng: ThreadRng,
     sim: sim::Simulation,

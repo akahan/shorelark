@@ -10,6 +10,7 @@ html, body {
 .panel {
     display: flex;
     padding: 1em;
+    height: 100%;
 }
 
 body {
@@ -48,4 +49,85 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#viewport {
+    border: 1px solid #6d92aa;
+}
+
+.left {
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+}
+
+.statistics {
+    border: 1px solid #73AD21;
+    background-color: #1f2639;
+    height: 300px;
+    padding: 10px;
+}
+
+.inputs {
+    float: left;
+}
+
+.button-item {
+    color: #73AD21;
+    display: inline-block;
+    margin: 15px;
+}
+
+.ProgressBarContainer {
+    display: block;
+    overflow: hidden;
+    margin-right: 6px;
+}
+
+.ProgressBarBackground {
+    width: 100%;
+    margin: 6px;
+    background-color: grey;
+}
+
+.ProgressBar {
+    width: 0%;
+    height: 30px;
+    background-color: #04AA6D;
+    text-align: left;
+    line-height: 30px;
+    color: white;
+}
+
+.slidecontainer {
+    width: 100%;
+    margin: 5px;
+}
+
+.slidecontainer p {
+    color: #04AA6D;
+}
+
+.slider {
+    width: 100%;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
 }

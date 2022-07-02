@@ -1,6 +1,7 @@
 import * as sim from "lib-simulation-wasm";
 import { Terminal } from "./app/terminal";
 import { Viewport } from "./app/viewport";
+import "./node_modules/chart.js/dist/chart.js"
 
 /* ---------- */
 
@@ -231,14 +232,31 @@ function execTrain(args) {
     }
 }
 
+let speedup = 1;
+
+var slider = document.getElementById("simulation_speed_slider");
+var output = document.getElementById("simulation_speed");
+output.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+  speedup = this.value;
+}
 /* ---------- */
 
 function redraw() {
     if (active) {
-        const stats = simulation.step();
-
-        if (stats) {
-            terminal.println(stats);
+        for (let i = 0; i < speedup; i += 1) {
+            let stats = simulation.step();
+            let min = stats.min();
+            let avg = stats.avg();
+            let max = stats.max();
+            if (min != null && avg != null && max != null) {
+                new_generation(stats)
+            }
+            let cur = stats.age()
+            let max_generation = stats.generation_length()
+            set_progressbar(cur, max_generation)
         }
     }
 
@@ -284,6 +302,142 @@ function redraw() {
     }
 
     requestAnimationFrame(redraw);
+}
+
+const CHART_COLORS = {
+    red: 'rgb(255, 99, 132)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(54, 162, 235)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(201, 203, 207)'
+};
+
+const ctx = document.getElementById('stats').getContext('2d');
+const min = [];
+const avg = [];
+const max = [];
+
+const chart_config = {
+    type: 'line',
+    data: {
+        datasets: [
+            {
+                borderColor: CHART_COLORS.green,
+                backgroundColor: CHART_COLORS.green,
+                borderWidth: 1,
+                radius: 0,
+                data: max,
+                label: 'max',
+                order: 2,
+            },
+            {
+                borderColor: CHART_COLORS.blue,
+                backgroundColor: CHART_COLORS.blue,
+                borderWidth: 1,
+                radius: 0,
+                data: avg,
+                label: 'avg',
+                order: 1,
+            },
+            {
+                borderColor: CHART_COLORS.red,
+                backgroundColor: CHART_COLORS.red,
+                borderWidth: 1,
+                radius: 0,
+                data: min,
+                label: 'min',
+                order: 0,
+            }],
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            axis: 'x',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                title: {
+                    display: true,
+                    text: 'Fitness statistics',
+                },
+            },
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: "Generation",
+                },
+                type: 'linear',
+                min: 0,
+                suggestedMax: 1,
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: "Fitness",
+                },
+                min: 0,
+                suggestedMax: 100,
+            }
+        }
+    }
+};
+
+const myChart = new Chart(ctx, chart_config)
+let generation = 1;
+
+function addGeneration(chart, label, stats) {
+    chart.data.labels.push(label);
+
+    chart.data.datasets[2].data.push(stats.min());
+    chart.data.datasets[1].data.push(stats.avg());
+    chart.data.datasets[0].data.push(stats.max());
+    chart.data.datasets.forEach(dataset => {
+        dataset.fill = 'start';
+    });
+    let generation = stats.generation();
+    if (generation < 50) {
+        chart.options.scales.x.min = 0;
+    } else {
+        chart.options.scales.x.min = generation - 50;
+    }
+    chart.options.scales.x.max = generation;
+    chart.update();
+}
+
+function new_generation(stats) {
+    addGeneration(myChart, generation, stats)
+    generation += 1
+    set_progressbar(0, stats.generation_length)
+}
+
+
+
+document.getElementById('train').onclick = function () {
+    const stats = simulation.train();
+    new_generation(stats)
+}
+
+var init_stat = {
+    'min': function () { return 0; },
+    'avg': function () { return 0; },
+    'max': function () { return 0; },
+    'age': function () { return 0; },
+    'generation': function () { return 0; },
+};
+addGeneration(myChart, 0, init_stat)
+
+var i = 0;
+function set_progressbar(cur, max) {
+    var elem = document.getElementById("generationBar");
+    var percentage = (cur * 100) / max;
+    elem.style.width = percentage + "%";
+    elem.innerHTML = cur + "/" + max;
 }
 
 redraw();

@@ -53,17 +53,19 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self, rng: &mut dyn RngCore) -> Option<Statistics> {
+    pub fn step(&mut self, rng: &mut dyn RngCore) -> SimulationStats {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
-        self.try_evolving(rng)
+        let gen_stat = self.try_evolving(rng);
+        self.generate_statistics(&gen_stat)
     }
 
-    pub fn train(&mut self, rng: &mut dyn RngCore) -> Statistics {
+    pub fn train(&mut self, rng: &mut dyn RngCore) -> SimulationStats {
         loop {
-            if let Some(statistics) = self.step(rng) {
-                return statistics;
+            let summary = self.step(rng);
+            if summary.age == 0 {
+                return summary;
             }
         }
     }
@@ -178,7 +180,7 @@ mod tests {
         let mut sim = Simulation::random(Default::default(), &mut rng);
 
         let avg_fitness = (0..10)
-            .map(|_| sim.train(&mut rng).ga.avg_fitness())
+            .map(|_| sim.train(&mut rng).avg_fitness.unwrap())
             .sum::<f32>()
             / 10.0;
 

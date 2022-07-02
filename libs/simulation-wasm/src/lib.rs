@@ -83,11 +83,13 @@ impl Simulation {
         JsValue::from_serde(&world).unwrap()
     }
 
-    pub fn step(&mut self) -> Option<String> {
-        self.sim.step(&mut self.rng).map(|stats| stats.to_string())
+    pub fn step(&mut self) -> Statistics {
+        let stats = self.sim.step(&mut self.rng);
+        Statistics::from_simulation_stats(&stats)
     }
 
-    pub fn train(&mut self) -> String {
-        self.sim.train(&mut self.rng).to_string()
+    pub fn train(&mut self) -> Statistics {
+        let stats = self.sim.train(&mut self.rng);
+        Statistics::from_simulation_stats(&stats)
     }
 }

@@ -1,5 +1,3 @@
-#![feature(crate_visibility_modifier)]
-
 pub use self::{animal::*, brain::*, config::*, eye::*, food::*, statistics::*, world::*};
 
 mod animal;
@@ -18,6 +16,15 @@ use nalgebra as na;
 use rand::{Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::f32::consts::*;
+
+pub struct SimulationStats {
+    pub age: usize,
+    pub generation_length: usize,
+    pub generation: usize,
+    pub min_fitness: Option<f32>,
+    pub avg_fitness: Option<f32>,
+    pub max_fitness: Option<f32>,
+}
 
 pub struct Simulation {
     config: Config,
@@ -46,17 +53,19 @@ impl Simulation {
         &self.world
     }
 
-    pub fn step(&mut self, rng: &mut dyn RngCore) -> Option<Statistics> {
+    pub fn step(&mut self, rng: &mut dyn RngCore) -> SimulationStats {
         self.process_collisions(rng);
         self.process_brains();
         self.process_movements();
-        self.try_evolving(rng)
+        let gen_stat = self.try_evolving(rng);
+        self.generate_statistics(&gen_stat)
     }
 
-    pub fn train(&mut self, rng: &mut dyn RngCore) -> Statistics {
+    pub fn train(&mut self, rng: &mut dyn RngCore) -> SimulationStats {
         loop {
-            if let Some(statistics) = self.step(rng) {
-                return statistics;
+            let summary = self.step(rng);
+            if summary.age == 0 {
+                return summary;
             }
         }
     }
@@ -145,6 +154,17 @@ impl Simulation {
             ga: statistics,
         }
     }
+
+    pub fn generate_statistics(&self, stats: &Option<Statistics>) -> SimulationStats {
+        SimulationStats {
+            age: self.age,
+            generation_length: self.config.sim_generation_length,
+            generation: self.generation,
+            min_fitness: stats.as_ref().map(|stats| stats.ga.min_fitness()),
+            avg_fitness: stats.as_ref().map(|stats| stats.ga.avg_fitness()),
+            max_fitness: stats.as_ref().map(|stats| stats.ga.max_fitness()),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -160,7 +180,7 @@ mod tests {
         let mut sim = Simulation::random(Default::default(), &mut rng);
 
         let avg_fitness = (0..10)
-            .map(|_| sim.train(&mut rng).ga.avg_fitness())
+            .map(|_| sim.train(&mut rng).avg_fitness.unwrap())
             .sum::<f32>()
             / 10.0;
 
